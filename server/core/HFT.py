@@ -10,9 +10,9 @@ class HFT:
 
     def __init__(self, wb):
         print('HFT initialized')
-        # for ticker in tickers:
-        #     self.stocks.append(Stock(ticker, wb))
-        # print(f'Created stocks for {len(self.stocks)} tickers')
+        for ticker in tickers:
+            self.stocks.append(Stock(ticker, wb))
+        print(f'Created stocks for {len(self.stocks)} tickers')
 
 
     def tick(self, wb):

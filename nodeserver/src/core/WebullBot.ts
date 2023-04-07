@@ -28,6 +28,6 @@ export class WebullBot {
 
   async ticker(ticker) {
     const tick = await Webull.get_quote(ticker);
-    return { price: Number(tick?.close) };
+    return { price: Number(tick?.pPrice || tick?.close), change: tick?.change };
   }
 }

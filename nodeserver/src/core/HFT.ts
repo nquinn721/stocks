@@ -6,6 +6,8 @@ export class HFT {
   stocks = [];
   soldStocks = [];
   bank = new Bank();
+  hftInterval: any;
+  interval: number = 1000;
 
   constructor(wb) {
     console.log('HFT initialized');
@@ -23,5 +25,15 @@ export class HFT {
         stock.reset();
       }
     });
+  }
+
+  start(wb) {
+    this.hftInterval = setInterval(() => {
+      this.tick(wb);
+    }, this.interval);
+  }
+
+  stop() {
+    clearInterval(this.hftInterval);
   }
 }
