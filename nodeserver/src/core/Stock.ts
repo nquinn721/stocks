@@ -8,68 +8,70 @@ export class Stock {
   change = 0;
   buyPrice = 0;
   sellPrice = 0;
+  allBuyPrices = [];
+  isSold = false;
   profit = 0;
   tickNum = 0;
+  purchaseTick = 0;
   direction = 'same';
   stockChange = 0;
   avaialableFunds = 0;
-  considerBuyPositive = 0.01;
-  percentChangeSellPositive = 0.01;
-  percentChangeSellNegative = -0.01;
+  considerBuyPositive = 1;
+  changeSellPositive = 1;
+  changeSellNegative = 10;
+  timeToHoldStock = 9999; // seconds
+  decimals = 2;
 
-  constructor(ticker, wb) {
-    this.ticker = ticker;
-    this.start(wb);
+  constructor(ticker) {
+    this.ticker = ticker.ticker;
+    this.changeSellPositive /= Math.pow(10, ticker.decimals);
+    this.changeSellNegative /= Math.pow(10, ticker.decimals);
+    this.considerBuyPositive /= Math.pow(10, ticker.decimals);
+    this.decimals = ticker.decimals;
+    // console.log(
+    //   this.ticker,
+    //   this.considerBuyPositive,
+    //   this.changeSellNegative,
+    //   this.changeSellPositive,
+    // );
   }
-  async start(wb) {
-    await this.getPrice(wb);
-    if (`${this.currentPrice}`.split('.')[1]?.length > 2) {
-      this.percentChangeSellPositive /= 10;
-      this.percentChangeSellNegative /= 10;
-      this.considerBuyPositive /= 10;
-      console.log(
-        this.ticker,
-        this.percentChangeSellNegative,
-        this.percentChangeSellPositive,
-      );
-    }
-  }
+
   async getPrice(wb) {
-    const { price, change } = await wb.ticker(this.ticker);
-
+    let { price, change } = await wb.ticker(this.ticker);
+    price = parseFloat(price.toFixed(this.decimals));
     this.prevPrice = this.prevPrice ? this.currentPrice : price;
     this.stockChange = change;
     this.currentPrice = price;
+    if (price > 50) console.log(this.ticker, price);
   }
 
   async tick(wb, bank) {
+    await this.getPrice(wb);
     if (!this.prevPrice) return;
 
     this.tickNum++;
-    await this.getPrice(wb);
-    this.change = (this.currentPrice * 1000 - this.prevPrice * 1000) / 1000;
+    this.buyPrice && this.allBuyPrices.push(this.currentPrice);
+    this.buyPrice && this.purchaseTick++;
+    this.change = parseFloat(
+      (this.currentPrice - this.prevPrice).toFixed(this.decimals),
+    );
 
     if (this.change >= this.considerBuyPositive) {
       this.direction = 'up';
-    } else if (this.change < this.percentChangeSellNegative)
-      this.direction = 'down';
+    } else if (this.change < this.changeSellNegative) this.direction = 'down';
     else if (this.direction !== 'same' && this.currentPrice === this.prevPrice)
       this.direction = 'same';
 
-    // console.log(
-    //   `P: ${this.prevPrice} C: ${this.currentPrice} Ch: ${this.change} D: ${this.direction}`,
-    // );
+    this.log();
     this.considerBuy(bank);
     this.considerSell();
-
-    if (this.buyPrice && this.tickNum >= 10 && this.direction === 'same')
-      this.sell();
   }
 
   considerBuy(bank) {
     if (this.buyPrice == 0 && this.direction == 'up') {
-      this.avaialableFunds = bank.get_money(this.ticker, this.currentPrice);
+      this.avaialableFunds = bank.get_money(this);
       if (this.avaialableFunds > this.currentPrice) {
+        // console.log('buying', this.ticker, this.prevPrice, this.currentPrice);
         this.buy(Math.floor(this.avaialableFunds / this.currentPrice));
         this.direction = 'same';
       }
@@ -77,41 +79,33 @@ export class Stock {
   }
 
   considerSell() {
-    if (this.buyPrice != 0 && this.sellPrice == 0)
+    if (this.buyPrice != 0 && this.sellPrice == 0) {
+      const considerSellHigh = parseFloat(
+        (this.buyPrice + this.changeSellPositive).toFixed(this.decimals),
+      );
+      const considerSellLow = parseFloat(
+        (this.buyPrice - this.changeSellNegative).toFixed(this.decimals),
+      );
       if (
-        this.currentPrice <= this.buyPrice + this.percentChangeSellNegative ||
-        this.currentPrice >= this.buyPrice + this.percentChangeSellPositive
+        this.currentPrice <= considerSellLow ||
+        this.currentPrice >= considerSellHigh ||
+        this.purchaseTick >= this.timeToHoldStock
       )
         this.sell();
+    }
   }
 
   buy(amount) {
-    // console.log(
-    //   color.cyan(
-    //     `Buying ${amount} shares of ${this.ticker} at ${this.currentPrice} each`,
-    //   ),
-    // );
     this.buyPrice = this.currentPrice;
-    this.avaialableFunds -= amount * this.buyPrice;
+    // this.avaialableFunds -= amount * this.buyPrice;
     this.amount = amount;
   }
 
   sell() {
     this.sellPrice = this.currentPrice;
-    this.avaialableFunds += this.amount * this.sellPrice;
+    this.isSold = true;
     this.profit = (this.sellPrice - this.buyPrice) * this.amount;
-    // if (this.profit < 0)
-    //   console.log(
-    //     color.red(
-    //       `Selling ${this.amount} shares of ${this.ticker} at ${this.currentPrice} each Buy Price: ${this.buyPrice} Profit: ${this.profit}`,
-    //     ),
-    //   );
-    // else
-    //   console.log(
-    //     color.green(
-    //       `Selling ${this.amount} shares of ${this.ticker} at ${this.currentPrice} each Buy Price: ${this.buyPrice} Profit: ${this.profit}`,
-    //     ),
-    //   );
+    this.avaialableFunds += this.profit;
   }
 
   reset() {
@@ -121,5 +115,14 @@ export class Stock {
     this.profit = 0;
     this.tickNum = 0;
     this.avaialableFunds = 0;
+    this.isSold = false;
+    this.purchaseTick = 0;
+    this.direction = 'same';
+  }
+  log() {
+    if (this.tickNum % 20 == 0 && this.buyPrice)
+      console.log(
+        `${this.ticker}:: P: ${this.prevPrice} C: ${this.currentPrice} Ch: ${this.change} D: ${this.direction}`,
+      );
   }
 }

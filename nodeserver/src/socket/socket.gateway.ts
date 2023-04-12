@@ -7,8 +7,6 @@ import { Server } from 'socket.io';
 
 import { TradeManager } from '../core/TradeManager';
 
-TradeManager.createHFt();
-
 @WebSocketGateway({
   cors: {
     origin: '*',
@@ -20,7 +18,8 @@ export class SocketGateway {
   server: Server;
 
   @SubscribeMessage('startHFT')
-  handleStart(client: any, data: any) {
+  async handleStart(client: any, data: any) {
+    await TradeManager.createHFt(client);
     TradeManager.tickStrategy();
     this.interval = setInterval(() => {
       TradeManager.tickStrategy();

@@ -6,9 +6,12 @@ export class TradeManager {
   static strategy: any;
   static webull: any;
 
-  static createHFt() {
+  static async createHFt(socket) {
+    socket.emit('start', 'Starting HFT');
     const wb = new WebullBot();
-    const hft = new HFT(wb);
+    const hft = new HFT();
+    await hft.init(wb);
+    socket.emit('start', 'HFT initialized');
     this.strategy = hft;
     this.webull = wb;
   }

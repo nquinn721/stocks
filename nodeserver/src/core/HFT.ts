@@ -9,10 +9,13 @@ export class HFT {
   hftInterval: any;
   interval: number = 1000;
 
-  constructor(wb) {
+  async init(wb) {
     console.log('HFT initialized');
     // this.stocks.push(new Stock('amc', wb));
-    tickers.forEach((ticker) => this.stocks.push(new Stock(ticker, wb)));
+    for (const ticker of tickers) {
+      const stock = new Stock(ticker);
+      this.stocks.push(stock);
+    }
     console.log('Created stocks for ' + this.stocks.length + ' tickers');
   }
 
@@ -20,7 +23,7 @@ export class HFT {
     this.stocks.forEach((stock) => {
       stock.tick(wb, this.bank);
 
-      if (stock.sellPrice) {
+      if (stock.isSold) {
         this.bank.add(stock);
         stock.reset();
       }

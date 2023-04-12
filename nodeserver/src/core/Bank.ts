@@ -15,40 +15,30 @@ export class Bank {
   profitSales = 0;
   lossSales = 0;
   history = [];
+  dumpHistory = [];
 
   add(stock) {
-    if (Number(stock.profit) == 0) return;
-    this.balance += stock.avaialableFunds;
     this.totalProfit += stock.profit;
-    this.totalSales++;
-    stock.profit > 0 && this.profitSales++;
     stock.profit < 0 && this.lossSales++;
+    stock.profit > 0 && this.profitSales++;
     this.totalMoneys = this.initialBalance + this.totalProfit;
-    console.log(this.totalMoneys);
-    // this.logAddToBank(stock);
-    this.history.push(Object.assign({}, stock));
+    this.balance += stock.avaialableFunds;
     delete this.stocksLended[stock.ticker];
+    // this.logAddToBank(stock);
+    this.history.unshift(Object.assign({}, stock));
+    this.totalSales++;
   }
 
-  get_money(stockName, stock_price) {
+  get_money(stock) {
     const totalStocksLend = Object.values(this.stocksLended).length;
-    if (totalStocksLend <= this.totalStocksLend && this.balance > stock_price) {
+    if (
+      totalStocksLend <= this.totalStocksLend &&
+      this.balance > stock.currentPrice
+    ) {
       const fundsLended =
         this.balance / (this.totalStocksLend - totalStocksLend);
       this.balance -= fundsLended;
-      this.stocksLended[stockName] = fundsLended;
-      // console.log(
-      //   yellow(
-      //     `Bank lending ${fundsLended} to ${stockName} Balanace: ${this.balance}`,
-      //   ),
-      // );
-      // console.log(
-      //   yellow(
-      //     `Stocks Lended: ${JSON.stringify(this.stocksLended)} Total ${
-      //       this.initialBalance - this.balance
-      //     }`,
-      //   ),
-      // );
+      this.stocksLended[stock.ticker] = { stock, fundsLended };
       return fundsLended;
     }
     return 0;
