@@ -6,16 +6,11 @@ export class HFT {
   stocks = [];
   soldStocks = [];
   bank = new Bank();
-  hftInterval: any;
-  interval: number = 1000;
 
-  async init(wb) {
+  constructor(wb) {
     console.log('HFT initialized');
     // this.stocks.push(new Stock('amc', wb));
-    for (const ticker of tickers) {
-      const stock = new Stock(ticker);
-      this.stocks.push(stock);
-    }
+    for (const ticker of tickers) this.stocks.push(new Stock(ticker));
     console.log('Created stocks for ' + this.stocks.length + ' tickers');
   }
 
@@ -28,15 +23,5 @@ export class HFT {
         stock.reset();
       }
     });
-  }
-
-  start(wb) {
-    this.hftInterval = setInterval(() => {
-      this.tick(wb);
-    }, this.interval);
-  }
-
-  stop() {
-    clearInterval(this.hftInterval);
   }
 }

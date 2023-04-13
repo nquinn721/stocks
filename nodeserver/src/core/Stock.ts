@@ -42,7 +42,7 @@ export class Stock {
     this.prevPrice = this.prevPrice ? this.currentPrice : price;
     this.stockChange = change;
     this.currentPrice = price;
-    if (price > 50) console.log(this.ticker, price);
+    // if (price > 50) console.log(this.ticker, price);
   }
 
   async tick(wb, bank) {
@@ -62,7 +62,7 @@ export class Stock {
     else if (this.direction !== 'same' && this.currentPrice === this.prevPrice)
       this.direction = 'same';
 
-    this.log();
+    // this.log();
     this.considerBuy(bank);
     this.considerSell();
   }

@@ -3,13 +3,15 @@ function round(num) {
   return num;
   // return Math.round(num * 100) / 100;
 }
+
+const balance = 10000;
 export class Bank {
-  initialBalance = 10000;
-  balance = 10000;
-  totalMoneys = 10000;
+  initialBalance = balance;
+  balance = balance;
+  totalMoneys = balance;
   totalProfit = 0;
   start = Date.now();
-  totalStocksLend = 4;
+  totalStocksLend = 10;
   stocksLended = {};
   totalSales = 0;
   profitSales = 0;
@@ -27,6 +29,7 @@ export class Bank {
     // this.logAddToBank(stock);
     this.history.unshift(Object.assign({}, stock));
     this.totalSales++;
+    this.history.length > 20 && this.history.pop();
   }
 
   get_money(stock) {

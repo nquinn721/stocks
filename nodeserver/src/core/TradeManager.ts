@@ -5,23 +5,37 @@ export class TradeManager {
   static hftInterval: any;
   static strategy: any;
   static webull: any;
+  static interval: number = 1000;
+  static socket: any;
 
-  static async createHFt(socket) {
-    socket.emit('start', 'Starting HFT');
+  static createHFt() {
+    this.socket?.emit('start', 'Starting HFT');
     const wb = new WebullBot();
-    const hft = new HFT();
-    await hft.init(wb);
-    socket.emit('start', 'HFT initialized');
+    const hft = new HFT(wb);
+    this.socket?.emit('start', 'HFT initialized');
     this.strategy = hft;
     this.webull = wb;
+    this.start();
   }
-  static tickStrategy() {
-    if (!this.strategy) return;
-    this.strategy.tick(this.webull);
+  static start() {
+    this.hftInterval = setInterval(() => {
+      if (this.isMarketHours()) {
+        this.socket?.emit('strategy', this.strategy);
+        this.strategy.tick(this.webull);
+      }
+      this.socket?.emit('marketClosed', !this.isMarketHours());
+    }, this.interval);
   }
-
-  static stopTick() {
+  static stop() {
     this.strategy = null;
     this.webull = null;
+    clearInterval(this.hftInterval);
+  }
+
+  static isMarketHours() {
+    const d = new Date(); // current time
+    const hours = d.getHours();
+
+    return hours >= 9 && hours < 17;
   }
 }

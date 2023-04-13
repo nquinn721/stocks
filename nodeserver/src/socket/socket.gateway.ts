@@ -1,4 +1,5 @@
 import {
+  OnGatewayConnection,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
@@ -7,29 +8,27 @@ import { Server } from 'socket.io';
 
 import { TradeManager } from '../core/TradeManager';
 
+TradeManager.createHFt();
 @WebSocketGateway({
   cors: {
     origin: '*',
   },
 })
-export class SocketGateway {
+export class SocketGateway implements OnGatewayConnection {
+  handleConnection(client: any, ...args: any[]) {
+    TradeManager.socket = client;
+  }
   interval: any;
   @WebSocketServer()
   server: Server;
 
-  @SubscribeMessage('startHFT')
+  @SubscribeMessage('connect')
   async handleStart(client: any, data: any) {
-    await TradeManager.createHFt(client);
-    TradeManager.tickStrategy();
-    this.interval = setInterval(() => {
-      TradeManager.tickStrategy();
-      client.emit('strategy', TradeManager.strategy);
-    }, 1000);
+    console.log('connection');
   }
 
   @SubscribeMessage('stopHFT')
   handleStop(client: any, data: any) {
-    TradeManager.stopTick();
-    clearInterval(this.interval);
+    TradeManager.stop();
   }
 }
