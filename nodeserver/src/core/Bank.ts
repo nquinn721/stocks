@@ -17,9 +17,10 @@ export class Bank {
   profitSales = 0;
   lossSales = 0;
   history = [];
-  dumpHistory = [];
+  timedOut = 0;
 
   add(stock) {
+    stock.purchaseTick >= stock.timeToHoldStock && this.timedOut++;
     this.totalProfit += stock.profit;
     stock.profit < 0 && this.lossSales++;
     stock.profit > 0 && this.profitSales++;

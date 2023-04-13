@@ -11,6 +11,7 @@ export class Stock {
   allBuyPrices = [];
   isSold = false;
   profit = 0;
+  currentProfit = 0;
   tickNum = 0;
   purchaseTick = 0;
   direction = 'same';
@@ -19,7 +20,7 @@ export class Stock {
   considerBuyPositive = 1;
   changeSellPositive = 1;
   changeSellNegative = 10;
-  timeToHoldStock = 9999; // seconds
+  timeToHoldStock = 100; // seconds
   decimals = 2;
 
   constructor(ticker) {
@@ -62,6 +63,9 @@ export class Stock {
     else if (this.direction !== 'same' && this.currentPrice === this.prevPrice)
       this.direction = 'same';
 
+    this.currentProfit = this.amount
+      ? this.amount * (this.currentPrice - this.buyPrice)
+      : 0;
     // this.log();
     this.considerBuy(bank);
     this.considerSell();
@@ -97,6 +101,7 @@ export class Stock {
 
   buy(amount) {
     this.buyPrice = this.currentPrice;
+    this.profit = (this.sellPrice - this.buyPrice) * this.amount;
     // this.avaialableFunds -= amount * this.buyPrice;
     this.amount = amount;
   }
@@ -104,7 +109,6 @@ export class Stock {
   sell() {
     this.sellPrice = this.currentPrice;
     this.isSold = true;
-    this.profit = (this.sellPrice - this.buyPrice) * this.amount;
     this.avaialableFunds += this.profit;
   }
 

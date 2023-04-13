@@ -1,5 +1,6 @@
 import {
   OnGatewayConnection,
+  OnGatewayDisconnect,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
@@ -14,18 +15,16 @@ TradeManager.createHFt();
     origin: '*',
   },
 })
-export class SocketGateway implements OnGatewayConnection {
+export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
+  handleDisconnect(client: any) {
+    TradeManager.socket = null;
+  }
   handleConnection(client: any, ...args: any[]) {
     TradeManager.socket = client;
   }
   interval: any;
   @WebSocketServer()
   server: Server;
-
-  @SubscribeMessage('connect')
-  async handleStart(client: any, data: any) {
-    console.log('connection');
-  }
 
   @SubscribeMessage('stopHFT')
   handleStop(client: any, data: any) {
