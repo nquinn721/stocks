@@ -19,7 +19,7 @@ export class Stock {
   avaialableFunds = 0;
   considerBuyPositive = 1;
   changeSellPositive = 1;
-  changeSellNegative = 10;
+  changeSellNegative = 2;
   timeToHoldStock = 100; // seconds
   decimals = 2;
 
@@ -101,13 +101,13 @@ export class Stock {
 
   buy(amount) {
     this.buyPrice = this.currentPrice;
-    this.profit = (this.sellPrice - this.buyPrice) * this.amount;
     // this.avaialableFunds -= amount * this.buyPrice;
     this.amount = amount;
   }
 
   sell() {
     this.sellPrice = this.currentPrice;
+    this.profit = (this.sellPrice - this.buyPrice) * this.amount;
     this.isSold = true;
     this.avaialableFunds += this.profit;
   }
