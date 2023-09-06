@@ -1,5 +1,1 @@
-WEBULL_LOGIN_EMAIL = 'natethepcspecialist@gmail.com'
-WEBULL_LOGIN_PWD = 'Adammike72185!'
-WEBULL_DEVICE_NAME = 'Nate - Main'
-WEBULL_DEVICE_ID = 'rzgs1av7qv82aki6gxl16dsrt1el7vig'
-WEBULL_TRADING_PIN = '907187'
+
